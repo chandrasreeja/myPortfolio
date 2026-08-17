@@ -14,14 +14,17 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenTerminal }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('');
 
-  // Bulletproof iOS & Android mobile scroll lock
+  // Lock mobile body scroll completely when menu is open
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+
     if (mobileMenuOpen) {
       const scrollY = window.scrollY;
       document.body.style.position = 'fixed';
       document.body.style.top = `-${scrollY}px`;
       document.body.style.width = '100%';
       document.body.style.overflow = 'hidden';
+      document.body.style.touchAction = 'none';
       document.documentElement.style.overflow = 'hidden';
     } else {
       const scrollY = document.body.style.top;
@@ -29,17 +32,20 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenTerminal }) => {
       document.body.style.top = '';
       document.body.style.width = '';
       document.body.style.overflow = '';
+      document.body.style.touchAction = '';
       document.documentElement.style.overflow = '';
       if (scrollY) {
         window.scrollTo(0, parseInt(scrollY || '0', 10) * -1);
       }
     }
+
     return () => {
       const scrollY = document.body.style.top;
       document.body.style.position = '';
       document.body.style.top = '';
       document.body.style.width = '';
       document.body.style.overflow = '';
+      document.body.style.touchAction = '';
       document.documentElement.style.overflow = '';
       if (scrollY) {
         window.scrollTo(0, parseInt(scrollY || '0', 10) * -1);
@@ -85,7 +91,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenTerminal }) => {
       <header
         className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
           scrolled
-            ? 'h-[70px] bg-navy/95 backdrop-blur-md shadow-lg shadow-navy-dark/50'
+            ? 'h-[70px] bg-[#0a192f]/95 backdrop-blur-md shadow-lg shadow-navy-dark/50'
             : 'h-[90px] sm:h-[100px] bg-transparent'
         } flex items-center px-6 sm:px-10 md:px-12`}
       >
@@ -186,23 +192,27 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenTerminal }) => {
       {/* Mobile Drawer Backdrop Overlay */}
       {mobileMenuOpen && (
         <div
-          className="fixed inset-0 bg-[#0a192f]/80 backdrop-blur-md z-[99] md:hidden animate-fade-in transition-opacity"
+          className="fixed inset-0 z-[9998] md:hidden transition-opacity duration-300 animate-fade-in"
+          style={{ backgroundColor: 'rgba(10, 25, 47, 0.88)', backdropFilter: 'blur(6px)' }}
           onClick={() => setMobileMenuOpen(false)}
           onTouchMove={(e) => e.preventDefault()}
           aria-hidden="true"
         />
       )}
 
-      {/* Mobile Drawer Menu (Solid Opaque Container with overscroll containment) */}
+      {/* Mobile Drawer Menu (Solid, 100% Opaque Container) */}
       <aside
-        className={`fixed top-0 bottom-0 right-0 w-[min(82vw,350px)] bg-[#112240] shadow-2xl p-8 flex flex-col justify-between z-[100] transform transition-transform duration-300 ease-in-out md:hidden border-l border-navy-lightest overflow-y-auto overscroll-contain ${
+        className={`fixed inset-y-0 right-0 h-full w-[min(85vw,360px)] z-[9999] p-6 sm:p-8 flex flex-col justify-between shadow-[-15px_0_35px_rgba(0,0,0,0.85)] border-l border-[#233554] overflow-y-auto overscroll-contain md:hidden transition-transform duration-300 ease-in-out ${
           mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
-        style={{ backgroundColor: '#112240' }}
+        style={{
+          backgroundColor: '#112240',
+          transform: mobileMenuOpen ? 'translateX(0)' : 'translateX(100%)',
+        }}
         aria-label="Mobile Navigation Drawer"
       >
         {/* Top Header in Drawer */}
-        <div className="flex items-center justify-between pb-6 border-b border-navy-lightest/50">
+        <div className="flex items-center justify-between pb-6 border-b border-[#233554]/60">
           <span className="font-mono text-xs text-green font-semibold tracking-wider">
             NAVIGATION
           </span>
@@ -216,7 +226,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenTerminal }) => {
         </div>
 
         {/* Navigation Links */}
-        <div className="flex flex-col items-center gap-5 font-mono text-sm text-center w-full my-auto py-8">
+        <div className="flex flex-col items-center gap-6 font-mono text-sm text-center w-full my-auto py-8">
           {navLinks.map((link) => (
             <a
               key={link.id}
@@ -245,7 +255,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenTerminal }) => {
         </div>
 
         {/* Footer in Drawer */}
-        <div className="pt-4 border-t border-navy-lightest/50 text-center font-mono text-[11px] text-slate/70">
+        <div className="pt-4 border-t border-[#233554]/60 text-center font-mono text-[11px] text-slate/70">
           <span>{portfolioData.personal.email}</span>
         </div>
       </aside>
