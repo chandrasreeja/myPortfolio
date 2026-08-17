@@ -14,42 +14,21 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenTerminal }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('');
 
-  // Lock mobile body scroll completely when menu is open
+  // Lock mobile body scroll when full-screen menu is open
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
     if (mobileMenuOpen) {
-      const scrollY = window.scrollY;
-      document.body.style.position = 'fixed';
-      document.body.style.top = `-${scrollY}px`;
-      document.body.style.width = '100%';
       document.body.style.overflow = 'hidden';
-      document.body.style.touchAction = 'none';
       document.documentElement.style.overflow = 'hidden';
     } else {
-      const scrollY = document.body.style.top;
-      document.body.style.position = '';
-      document.body.style.top = '';
-      document.body.style.width = '';
       document.body.style.overflow = '';
-      document.body.style.touchAction = '';
       document.documentElement.style.overflow = '';
-      if (scrollY) {
-        window.scrollTo(0, parseInt(scrollY || '0', 10) * -1);
-      }
     }
 
     return () => {
-      const scrollY = document.body.style.top;
-      document.body.style.position = '';
-      document.body.style.top = '';
-      document.body.style.width = '';
       document.body.style.overflow = '';
-      document.body.style.touchAction = '';
       document.documentElement.style.overflow = '';
-      if (scrollY) {
-        window.scrollTo(0, parseInt(scrollY || '0', 10) * -1);
-      }
     };
   }, [mobileMenuOpen]);
 
@@ -189,76 +168,79 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenTerminal }) => {
         </nav>
       </header>
 
-      {/* Mobile Drawer Backdrop Overlay */}
+      {/* Full-Screen Mobile Navigation Overlay */}
       {mobileMenuOpen && (
         <div
-          className="fixed inset-0 z-[9998] md:hidden transition-opacity duration-300 animate-fade-in"
-          style={{ backgroundColor: 'rgba(10, 25, 47, 0.88)', backdropFilter: 'blur(6px)' }}
-          onClick={() => setMobileMenuOpen(false)}
-          onTouchMove={(e) => e.preventDefault()}
-          aria-hidden="true"
-        />
-      )}
+          className="fixed inset-0 z-[9999] flex flex-col justify-between p-6 sm:p-8 md:hidden overflow-y-auto"
+          style={{ backgroundColor: '#0a192f' }}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Mobile Navigation Menu"
+        >
+          {/* Top Bar: Monogram Logo & Close Button */}
+          <div className="flex items-center justify-between w-full pb-4 border-b border-[#233554]/60">
+            <div className="flex items-center gap-2">
+              <span className="font-mono text-base font-bold text-green">
+                {portfolioData.personal.monogram}
+              </span>
+              <span className="font-mono text-xs text-slate-light">/ navigation</span>
+            </div>
 
-      {/* Mobile Drawer Menu (Solid, 100% Opaque Container) */}
-      <aside
-        className={`fixed inset-y-0 right-0 h-full w-[min(85vw,360px)] z-[9999] p-6 sm:p-8 flex flex-col justify-between shadow-[-15px_0_35px_rgba(0,0,0,0.85)] border-l border-[#233554] overflow-y-auto overscroll-contain md:hidden transition-transform duration-300 ease-in-out ${
-          mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
-        }`}
-        style={{
-          backgroundColor: '#112240',
-          transform: mobileMenuOpen ? 'translateX(0)' : 'translateX(100%)',
-        }}
-        aria-label="Mobile Navigation Drawer"
-      >
-        {/* Top Header in Drawer */}
-        <div className="flex items-center justify-between pb-6 border-b border-[#233554]/60">
-          <span className="font-mono text-xs text-green font-semibold tracking-wider">
-            NAVIGATION
-          </span>
-          <button
-            onClick={() => setMobileMenuOpen(false)}
-            className="p-2 text-slate hover:text-green rounded transition-colors"
-            aria-label="Close Menu"
-          >
-            <X className="w-6 h-6" />
-          </button>
-        </div>
-
-        {/* Navigation Links */}
-        <div className="flex flex-col items-center gap-6 font-mono text-sm text-center w-full my-auto py-8">
-          {navLinks.map((link) => (
-            <a
-              key={link.id}
-              href={link.href}
+            <button
               onClick={() => setMobileMenuOpen(false)}
-              className="text-slate-lightest hover:text-green py-2 transition-colors w-full"
+              className="p-2 text-slate-light hover:text-green rounded-lg transition-colors"
+              aria-label="Close Menu"
             >
-              <span className="text-green text-xs block mb-1">{link.number}</span>
-              <span className="text-base font-semibold">{link.name}</span>
-            </a>
-          ))}
+              <X className="w-7 h-7 text-green" />
+            </button>
+          </div>
 
-          {/* Resume CTA */}
-          <div className="mt-4 w-full">
+          {/* Centered Navigation Links with Large Touch Targets */}
+          <div className="flex flex-col items-center justify-center gap-5 my-auto py-6 w-full">
+            {navLinks.map((link) => (
+              <a
+                key={link.id}
+                href={link.href}
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex flex-col items-center py-2 w-full max-w-xs transition-transform active:scale-95 group"
+              >
+                <span className="font-mono text-green text-xs tracking-widest mb-0.5">
+                  {link.number}
+                </span>
+                <span className="font-mono text-xl sm:text-2xl font-bold text-slate-lightest group-hover:text-green transition-colors">
+                  {link.name}
+                </span>
+              </a>
+            ))}
+
+            {/* Resume Button */}
+            <div className="mt-4 w-full max-w-xs">
+              <a
+                href={portfolioData.personal.resumeUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setMobileMenuOpen(false)}
+                className="btn-primary w-full py-3.5 text-sm font-mono flex items-center justify-center gap-2 shadow-xl"
+              >
+                <FileText className="w-4 h-4" />
+                <span>Resume (Google Drive)</span>
+              </a>
+            </div>
+          </div>
+
+          {/* Bottom Footer: Direct Email Link */}
+          <div className="pt-4 border-t border-[#233554]/60 text-center font-mono text-xs text-slate">
             <a
-              href={portfolioData.personal.resumeUrl}
+              href={`mailto:${portfolioData.personal.email}`}
               target="_blank"
               rel="noopener noreferrer"
-              onClick={() => setMobileMenuOpen(false)}
-              className="btn-primary w-full py-3.5 text-xs flex items-center justify-center gap-2"
+              className="hover:text-green transition-colors"
             >
-              <FileText className="w-4 h-4" />
-              <span>Resume</span>
+              {portfolioData.personal.email}
             </a>
           </div>
         </div>
-
-        {/* Footer in Drawer */}
-        <div className="pt-4 border-t border-[#233554]/60 text-center font-mono text-[11px] text-slate/70">
-          <span>{portfolioData.personal.email}</span>
-        </div>
-      </aside>
+      )}
     </>
   );
 };
