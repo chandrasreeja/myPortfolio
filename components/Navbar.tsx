@@ -14,15 +14,36 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenTerminal }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('');
 
-  // Lock body scroll when mobile menu is open
+  // Bulletproof iOS & Android mobile scroll lock
   useEffect(() => {
     if (mobileMenuOpen) {
+      const scrollY = window.scrollY;
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = '100%';
       document.body.style.overflow = 'hidden';
+      document.documentElement.style.overflow = 'hidden';
     } else {
-      document.body.style.overflow = 'unset';
+      const scrollY = document.body.style.top;
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.width = '';
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+      if (scrollY) {
+        window.scrollTo(0, parseInt(scrollY || '0', 10) * -1);
+      }
     }
     return () => {
-      document.body.style.overflow = 'unset';
+      const scrollY = document.body.style.top;
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.width = '';
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+      if (scrollY) {
+        window.scrollTo(0, parseInt(scrollY || '0', 10) * -1);
+      }
     };
   }, [mobileMenuOpen]);
 
@@ -165,17 +186,19 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenTerminal }) => {
       {/* Mobile Drawer Backdrop Overlay */}
       {mobileMenuOpen && (
         <div
-          className="fixed inset-0 bg-navy-dark/80 backdrop-blur-sm z-50 md:hidden animate-fade-in transition-opacity"
+          className="fixed inset-0 bg-[#0a192f]/80 backdrop-blur-md z-[99] md:hidden animate-fade-in transition-opacity"
           onClick={() => setMobileMenuOpen(false)}
+          onTouchMove={(e) => e.preventDefault()}
           aria-hidden="true"
         />
       )}
 
-      {/* Mobile Drawer Menu (Solid Opaque Container) */}
+      {/* Mobile Drawer Menu (Solid Opaque Container with overscroll containment) */}
       <aside
-        className={`fixed top-0 bottom-0 right-0 w-[min(80vw,340px)] bg-[#112240] shadow-2xl p-8 flex flex-col justify-between z-50 transform transition-transform duration-300 ease-in-out md:hidden border-l border-navy-lightest overflow-y-auto ${
+        className={`fixed top-0 bottom-0 right-0 w-[min(82vw,350px)] bg-[#112240] shadow-2xl p-8 flex flex-col justify-between z-[100] transform transition-transform duration-300 ease-in-out md:hidden border-l border-navy-lightest overflow-y-auto overscroll-contain ${
           mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
+        style={{ backgroundColor: '#112240' }}
         aria-label="Mobile Navigation Drawer"
       >
         {/* Top Header in Drawer */}
